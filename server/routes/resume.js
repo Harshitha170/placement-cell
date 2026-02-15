@@ -65,10 +65,17 @@ router.post('/upload', protect, authorize('student'), upload.single('resume'), a
             ...analysisResult
         });
 
-        // Update user's resume URL
-        await User.findByIdAndUpdate(req.user._id, {
+        // Update user's resume URL and sync extracted skills to profile for better recommendations
+        const userUpdate = {
             'studentProfile.resumeUrl': `/uploads/resumes/${req.file.filename}`
-        });
+        };
+
+        // If skills were extracted, sync them to the profile
+        if (analysisResult.skills && analysisResult.skills.length > 0) {
+            userUpdate['studentProfile.skills'] = analysisResult.skills;
+        }
+
+        await User.findByIdAndUpdate(req.user._id, userUpdate);
 
         res.status(201).json(resumeAnalysis);
     } catch (error) {

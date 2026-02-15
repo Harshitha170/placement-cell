@@ -30,6 +30,7 @@ const prepNoteSchema = new mongoose.Schema({
         title: String,
         url: String
     }],
+    fileUrl: String,
     tags: [String],
     createdBy: {
         type: mongoose.Schema.Types.ObjectId,

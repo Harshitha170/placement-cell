@@ -32,7 +32,7 @@ const interviewSchema = new mongoose.Schema({
     meetingLink: String,
     meetingType: {
         type: String,
-        enum: ['online', 'offline', 'phone'],
+        enum: ['online', 'in-person', 'phone'],
         default: 'online'
     },
     location: String, // for offline interviews

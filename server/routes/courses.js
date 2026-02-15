@@ -10,7 +10,7 @@ router.get('/', protect, async (req, res) => {
     try {
         const { jobRole, category, difficulty, provider, skills, search } = req.query;
 
-        let query = { isFree: true }; // Only show free courses
+        let query = {}; // Show all courses by default
 
         if (jobRole) {
             query.jobRoles = { $in: [jobRole] };
@@ -68,8 +68,8 @@ router.get('/recommended', protect, authorize('student'), async (req, res) => {
         const Job = require('../models/Job');
 
         // Get user's recent applications to understand their interests
-        const applications = await Application.find({ student: req.user.id })
-            .populate('job')
+        const applications = await Application.find({ studentId: req.user.id })
+            .populate('jobId')
             .limit(10);
 
         // Extract job roles and required skills from applications
@@ -77,10 +77,10 @@ router.get('/recommended', protect, authorize('student'), async (req, res) => {
         const skills = new Set();
 
         applications.forEach(app => {
-            if (app.job) {
-                jobRoles.add(app.job.title);
-                if (app.job.requirements) {
-                    app.job.requirements.split(',').forEach(skill => {
+            if (app.jobId) {
+                jobRoles.add(app.jobId.title);
+                if (app.jobId.requirements) {
+                    app.jobId.requirements.split(',').forEach(skill => {
                         skills.add(skill.trim().toLowerCase());
                     });
                 }
@@ -88,8 +88,8 @@ router.get('/recommended', protect, authorize('student'), async (req, res) => {
         });
 
         // If user profile has skills, add those too
-        if (req.user.skills && Array.isArray(req.user.skills)) {
-            req.user.skills.forEach(skill => skills.add(skill.toLowerCase()));
+        if (req.user.studentProfile?.skills && Array.isArray(req.user.studentProfile.skills)) {
+            req.user.studentProfile.skills.forEach(skill => skills.add(skill.toLowerCase()));
         }
 
         const jobRolesArray = Array.from(jobRoles);
@@ -97,7 +97,6 @@ router.get('/recommended', protect, authorize('student'), async (req, res) => {
 
         // Find courses matching job roles or skills
         const query = {
-            isFree: true,
             $or: []
         };
 

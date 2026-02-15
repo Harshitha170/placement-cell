@@ -14,6 +14,7 @@ const generateToken = (id) => {
 // @desc    Register a new user
 // @access  Public
 router.post('/register', async (req, res) => {
+    console.log('Register Request:', req.body);
     try {
         const { name, email, password, role } = req.body;
 
@@ -50,12 +51,23 @@ router.post('/register', async (req, res) => {
 // @access  Public
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, role } = req.body;
 
         // Find user
         const user = await User.findOne({ email });
 
-        if (user && (await user.comparePassword(password))) {
+        if (!user) {
+            return res.status(401).json({ message: 'User not registered. Please sign up to create an account.' });
+        }
+
+        // Check if role matches if provided
+        if (role && user.role !== role) {
+            return res.status(401).json({
+                message: `This account is registered as a ${user.role}. Please select the correct role.`
+            });
+        }
+
+        if (await user.comparePassword(password)) {
             res.json({
                 _id: user._id,
                 name: user.name,

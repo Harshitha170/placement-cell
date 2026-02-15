@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const PrepNote = require('../models/PrepNote');
 const { protect, authorize } = require('../middleware/authMiddleware');
+const noteUpload = require('../middleware/noteUpload');
 
 // @route   GET /api/prep-notes
 // @desc    Get all prep notes with filters
@@ -63,15 +64,27 @@ router.get('/:id', async (req, res) => {
 // @route   POST /api/prep-notes
 // @desc    Create a new prep note
 // @access  Private (Admin only)
-router.post('/', protect, authorize('admin'), async (req, res) => {
+router.post('/', protect, authorize('admin'), noteUpload.single('file'), async (req, res) => {
     try {
+        const noteData = { ...req.body };
+
+        if (req.file) {
+            noteData.fileUrl = `/uploads/notes/${req.file.filename}`;
+        }
+
+        // Parse tips and tags if they come as strings
+        if (typeof noteData.tips === 'string') noteData.tips = JSON.parse(noteData.tips);
+        if (typeof noteData.tags === 'string') noteData.tags = JSON.parse(noteData.tags);
+        if (typeof noteData.resources === 'string') noteData.resources = JSON.parse(noteData.resources);
+
         const prepNote = await PrepNote.create({
-            ...req.body,
+            ...noteData,
             createdBy: req.user._id
         });
 
         res.status(201).json(prepNote);
     } catch (error) {
+        console.error('Error creating prep note:', error);
         res.status(500).json({ message: error.message });
     }
 });
@@ -79,7 +92,7 @@ router.post('/', protect, authorize('admin'), async (req, res) => {
 // @route   PUT /api/prep-notes/:id
 // @desc    Update a prep note
 // @access  Private (Admin only)
-router.put('/:id', protect, authorize('admin'), async (req, res) => {
+router.put('/:id', protect, authorize('admin'), noteUpload.single('file'), async (req, res) => {
     try {
         const prepNote = await PrepNote.findById(req.params.id);
 
@@ -87,9 +100,20 @@ router.put('/:id', protect, authorize('admin'), async (req, res) => {
             return res.status(404).json({ message: 'Prep note not found' });
         }
 
+        const noteData = { ...req.body };
+
+        if (req.file) {
+            noteData.fileUrl = `/uploads/notes/${req.file.filename}`;
+        }
+
+        // Parse tips and tags if they come as strings
+        if (typeof noteData.tips === 'string') noteData.tips = JSON.parse(noteData.tips);
+        if (typeof noteData.tags === 'string') noteData.tags = JSON.parse(noteData.tags);
+        if (typeof noteData.resources === 'string') noteData.resources = JSON.parse(noteData.resources);
+
         const updatedPrepNote = await PrepNote.findByIdAndUpdate(
             req.params.id,
-            { ...req.body, updatedAt: Date.now() },
+            { ...noteData, updatedAt: Date.now() },
             { new: true, runValidators: true }
         );
 

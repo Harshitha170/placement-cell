@@ -17,14 +17,36 @@ const Home = () => {
                         <main className="mt-10 mx-auto max-w-7xl px-4 sm:mt-12 sm:px-6 md:mt-16 lg:mt-20 lg:px-8 xl:mt-28">
                             <div className="sm:text-center lg:text-left">
                                 <h1 className="text-4xl tracking-tight font-extrabold text-gray-900 sm:text-5xl md:text-6xl text-balance">
-                                    <span className="block xl:inline">Building the</span>{' '}
-                                    <span className="block text-primary-600 xl:inline">Career Bridge</span>{' '}
-                                    <span className="block xl:inline">to Your Future</span>
+                                    <span className="block xl:inline">
+                                        {user?.role === 'recruiter' ? 'Accelerate Your' :
+                                            user?.role === 'admin' ? 'Optimize Your' : 'Building the'}
+                                    </span>{' '}
+                                    <span className="block text-primary-600 xl:inline">
+                                        {user?.role === 'recruiter' ? 'Talent Pipeline' :
+                                            user?.role === 'admin' ? 'Operations' : 'Career Bridge'}
+                                    </span>{' '}
+                                    <span className="block xl:inline">
+                                        {user?.role === 'recruiter' ? 'Effortlessly' :
+                                            user?.role === 'admin' ? 'Engine' : 'to Your Future'}
+                                    </span>
                                 </h1>
                                 <p className="mt-3 text-base text-gray-500 sm:mt-5 sm:text-lg sm:max-w-xl sm:mx-auto md:mt-5 md:text-xl lg:mx-0">
-                                    Connect with top recruiters, prepare with AI-powered mock interviews, and track your professional progress all in one place.
+                                    {user?.role === 'recruiter'
+                                        ? "Deploy job opportunities, manage high-potential talent, and schedule interviews with our elite recruitment dashboard."
+                                        : user?.role === 'admin'
+                                            ? "Coordinate the entire placement ecosystem, manage user accounts, and track global placement metrics in real-time."
+                                            : "Connect with top recruiters, prepare with AI-powered mock interviews, and track your professional progress all in one place."
+                                    }
                                 </p>
-                                {!user && (
+                                {user ? (
+                                    <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
+                                        <div className="rounded-md shadow">
+                                            <Link to={`/${user.role}/dashboard`} className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 md:py-4 md:text-lg md:px-10 transition-all duration-300 transform hover:scale-105">
+                                                Go to Dashboard
+                                            </Link>
+                                        </div>
+                                    </div>
+                                ) : (
                                     <div className="mt-5 sm:mt-8 sm:flex sm:justify-center lg:justify-start">
                                         <div className="rounded-md shadow">
                                             <Link to="/register" className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 md:py-4 md:text-lg md:px-10 transition-all duration-300 transform hover:scale-105">

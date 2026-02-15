@@ -1,14 +1,105 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [role, setRole] = useState('student'); // Default role
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
     const { login } = useAuth();
     const navigate = useNavigate();
+
+    const roles = [
+        {
+            id: 'student',
+            title: 'Student',
+            icon: '🎓',
+            color: 'emerald',
+            styles: {
+                bgDark: 'bg-emerald-900',
+                bgLight: 'bg-emerald-50',
+                text: 'text-emerald-600',
+                border: 'border-emerald-400',
+                focus: 'focus:border-emerald-400',
+                hover: 'hover:text-emerald-400',
+                button: 'bg-emerald-600 hover:bg-emerald-700',
+                dot: 'bg-emerald-500',
+                underline: 'decoration-emerald-600',
+                link: 'text-emerald-500 hover:text-emerald-700'
+            }
+        },
+        {
+            id: 'recruiter',
+            title: 'Recruiter',
+            icon: '💼',
+            color: 'indigo',
+            styles: {
+                bgDark: 'bg-indigo-900',
+                bgLight: 'bg-indigo-50',
+                text: 'text-indigo-600',
+                border: 'border-indigo-400',
+                focus: 'focus:border-indigo-400',
+                hover: 'hover:text-indigo-400',
+                button: 'bg-indigo-600 hover:bg-indigo-700',
+                dot: 'bg-indigo-500',
+                underline: 'decoration-indigo-600',
+                link: 'text-indigo-500 hover:text-indigo-700'
+            }
+        },
+        {
+            id: 'admin',
+            title: 'Admin',
+            icon: 'shield',
+            color: 'purple',
+            styles: {
+                bgDark: 'bg-purple-900',
+                bgLight: 'bg-purple-50',
+                text: 'text-purple-600',
+                border: 'border-purple-400',
+                focus: 'focus:border-purple-400',
+                hover: 'hover:text-purple-400',
+                button: 'bg-purple-600 hover:bg-purple-700',
+                dot: 'bg-purple-500',
+                underline: 'decoration-purple-600',
+                link: 'text-purple-500 hover:text-purple-700'
+            }
+        }
+    ];
+
+    const currentRoleData = roles.find(r => r.id === role);
+
+    // Handle Keyboard Arrow Keys for Role Switching
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                const currentIndex = roles.findIndex(r => r.id === role);
+                let nextIndex;
+                if (e.key === 'ArrowRight') {
+                    nextIndex = (currentIndex + 1) % roles.length;
+                } else {
+                    nextIndex = (currentIndex - 1 + roles.length) % roles.length;
+                }
+                setRole(roles[nextIndex].id);
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [role]);
+
+    // Clear error after 10 seconds
+    useEffect(() => {
+        if (error) {
+            const timer = setTimeout(() => {
+                setError('');
+            }, 10000);
+            return () => clearTimeout(timer);
+        }
+    }, [error]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -16,159 +107,177 @@ const Login = () => {
         setLoading(true);
 
         try {
-            const user = await login(email, password);
+            const user = await login(email, password, role);
 
             // Redirect based on role
-            if (user.role === 'student') {
-                navigate('/student/dashboard');
-            } else if (user.role === 'recruiter') {
-                navigate('/recruiter/dashboard');
-            } else if (user.role === 'admin') {
-                navigate('/admin/dashboard');
-            }
+            const routes = {
+                student: '/student/dashboard',
+                recruiter: '/recruiter/dashboard',
+                admin: '/admin/dashboard'
+            };
+            navigate(routes[user.role] || '/');
         } catch (err) {
-            setError(err.response?.data?.message || 'Login failed');
+            setError(err.response?.data?.message || 'Invalid email or password');
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex bg-white">
-            {/* Left Side: Form */}
-            <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-                <div className="mx-auto w-full max-w-sm lg:w-96">
-                    <div>
-                        <Link to="/" className="inline-block mb-8">
-                            <span className="text-3xl font-bold bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-transparent">Career Bridge</span>
-                        </Link>
-                        <h2 className="text-3xl font-extrabold text-gray-900">Welcome Back</h2>
-                        <p className="mt-2 text-sm text-gray-600">
-                            Sign in to continue your professional journey
-                        </p>
-                    </div>
+        <div className="min-h-screen flex bg-white font-sans">
+            {/* Left Side: Image/Branding Section - Stabilized layout */}
+            <div className={`hidden lg:block relative w-[45%] overflow-hidden transition-colors duration-700 ${currentRoleData.styles.bgDark}`}>
+                <img
+                    className="absolute inset-0 h-full w-full object-cover opacity-90 shadow-2xl"
+                    src="/images/login.png"
+                    alt="Success"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
 
-                    <div className="mt-8">
-                        {error && (
-                            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-400 text-red-700 rounded-md">
-                                <div className="flex">
-                                    <div className="flex-shrink-0">
-                                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
-                                        </svg>
-                                    </div>
-                                    <div className="ml-3 font-medium text-sm">
-                                        {error}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+                <div className="absolute top-12 left-12">
+                    <Link to="/" className="flex items-center gap-3">
+                        <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-primary-600 font-black text-2xl shadow-2xl">CB</div>
+                        <span className="text-3xl font-black text-white tracking-tighter">Career Bridge</span>
+                    </Link>
+                </div>
 
-                        <div className="mt-6">
-                            <form onSubmit={handleSubmit} className="space-y-6">
-                                <div>
-                                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                                        Email Address
-                                    </label>
-                                    <div className="mt-1">
-                                        <input
-                                            id="email"
-                                            name="email"
-                                            type="email"
-                                            autoComplete="email"
-                                            required
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all"
-                                            placeholder="you@example.com"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-1">
-                                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                                        Password
-                                    </label>
-                                    <div className="mt-1">
-                                        <input
-                                            id="password"
-                                            name="password"
-                                            type="password"
-                                            autoComplete="current-password"
-                                            required
-                                            value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
-                                            className="appearance-none block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm transition-all"
-                                            placeholder="••••••••"
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center">
-                                        <input
-                                            id="remember-me"
-                                            name="remember-me"
-                                            type="checkbox"
-                                            className="h-4 w-4 text-primary-600 focus:ring-primary-500 border-gray-300 rounded"
-                                        />
-                                        <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                                            Remember me
-                                        </label>
-                                    </div>
-
-                                    <div className="text-sm">
-                                        <a href="#" className="font-medium text-primary-600 hover:text-primary-500">
-                                            Forgot your password?
-                                        </a>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <button
-                                        type="submit"
-                                        disabled={loading}
-                                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-gradient-to-r from-primary-600 to-indigo-600 hover:from-primary-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 disabled:opacity-50 transition-all duration-300 transform hover:scale-[1.02] active:scale-[0.98]"
-                                    >
-                                        {loading ? (
-                                            <span className="flex items-center">
-                                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                                </svg>
-                                                Signing in...
-                                            </span>
-                                        ) : 'Sign In'}
-                                    </button>
-                                </div>
-                            </form>
-
-                            <div className="mt-8 text-center">
-                                <p className="text-sm text-gray-600">
-                                    New to Career Bridge?{' '}
-                                    <Link to="/register" className="font-bold text-primary-600 hover:text-primary-500 underline decoration-2 decoration-primary-200 underline-offset-4">
-                                        Create an account
-                                    </Link>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
+                <div className="absolute bottom-20 left-16 right-16 text-white text-balance">
+                    <h2 className="text-6xl font-black mb-6 leading-tight tracking-tight">
+                        Elevate Your <span className="text-white/90">Career</span> Today.
+                    </h2>
+                    <p className="text-xl text-white/90 max-w-md leading-relaxed font-medium">
+                        The ultimate platform connecting ambitious talent with world-class opportunities.
+                    </p>
                 </div>
             </div>
 
-            {/* Right Side: Image/Branding */}
-            <div className="hidden lg:block relative w-0 flex-1">
-                <img
-                    className="absolute inset-0 h-full w-full object-cover"
-                    src="/login_side.png"
-                    alt="Career Success"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-primary-900/40 to-transparent pointer-events-none" />
-                <div className="absolute bottom-12 left-12 right-12 text-white">
-                    <h2 className="text-4xl font-bold mb-4 drop-shadow-lg">Elevate Your Career</h2>
-                    <p className="text-xl text-primary-50 drop-shadow-md">
-                        The ultimate platform connecting ambitious talent with world-class opportunities.
-                    </p>
+            {/* Right Side: Professional Login Section */}
+            <div className="flex-1 flex flex-col justify-center py-12 px-8 sm:px-16 lg:px-24 bg-white shadow-2xl z-10">
+                <div className="mx-auto w-full max-w-sm lg:w-[420px]">
+                    <div className="mb-12 text-center lg:text-left">
+                        <h2 className="text-4xl font-black text-black mb-3 tracking-tight">Welcome Back</h2>
+                        <p className="text-black/70 text-lg font-bold">Select your role and login.</p>
+                    </div>
+
+                    {error && (
+                        <div key={error} className="relative mb-8 p-5 bg-rose-50 border-l-4 border-rose-500 text-rose-700 rounded-xl flex items-center gap-4 animate-in fade-in slide-in-from-top-4 animate-shake overflow-hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <span className="text-sm font-bold">{error}</span>
+
+                            {/* 10-Second Visual Progress Bar */}
+                            <div className="absolute bottom-0 left-0 h-1 bg-rose-200 w-full">
+                                <div
+                                    className="h-full bg-rose-500"
+                                    style={{
+                                        animation: 'shrink 10s linear forwards'
+                                    }}
+                                />
+                            </div>
+                        </div>
+                    )}
+
+                    <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* Role Selection */}
+                        <div className="space-y-4">
+                            <div className="px-1">
+                                <label className="text-xs font-black text-black uppercase tracking-widest">Select Role</label>
+                            </div>
+                            <div className="grid grid-cols-3 gap-3">
+                                {roles.map((r) => (
+                                    <button
+                                        key={r.id}
+                                        type="button"
+                                        onClick={() => setRole(r.id)}
+                                        className={`flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-300 ${role === r.id
+                                            ? `${r.styles.border} ${r.styles.bgLight} ${r.styles.text} shadow-xl scale-105`
+                                            : 'border-slate-50 bg-slate-50 text-slate-400 hover:border-slate-200 hover:bg-white'
+                                            }`}
+                                    >
+                                        <span className={`text-2xl mb-1 transition-transform duration-300 ${role === r.id ? 'scale-125 rotate-6' : ''}`}>{r.id === 'admin' ? '🛡️' : r.icon}</span>
+                                        <span className={`text-[10px] font-black uppercase tracking-widest ${role === r.id ? r.styles.text : 'text-black'}`}>
+                                            {r.title}
+                                        </span>
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+
+
+                        <div className="space-y-6">
+                            <div>
+                                <label className="block text-xs font-black text-black uppercase tracking-widest mb-2 px-1">Email</label>
+                                <input
+                                    type="email"
+                                    required
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    className={`input-field ${currentRoleData.styles.focus} transition-all`}
+                                    placeholder="Enter your email"
+                                />
+                            </div>
+
+                            <div>
+                                <div className="flex justify-between items-center mb-2 px-1">
+                                    <label className="text-xs font-black text-black uppercase tracking-widest">Password</label>
+                                </div>
+                                <div className="relative group">
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        required
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        className={`input-field ${currentRoleData.styles.focus} transition-all`}
+                                        placeholder="••••••••"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className={`absolute right-5 top-1/2 -translate-y-1/2 text-slate-300 ${currentRoleData.styles.hover} transition-colors cursor-pointer`}
+                                        title={showPassword ? "Hide Secret" : "View Secret"}
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            {showPassword ? (
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                                            ) : (
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                            )}
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Professional Identity Confirmation Box - Bold All Caps */}
+                        <div className="p-5 rounded-2xl border-2 border-black bg-slate-50 flex items-center justify-center transition-all duration-500 shadow-sm mb-6">
+                            <p className="text-sm font-black text-black uppercase tracking-[0.2em] flex items-center gap-3">
+                                <span className={`w-2 h-2 rounded-full ${currentRoleData.styles.dot} shadow-[0_0_10px_rgba(0,0,0,0.1)]`}></span>
+                                PROCEED AS <span className={`${currentRoleData.styles.text} underline underline-offset-4 decoration-2`}>{currentRoleData.title}</span>
+                            </p>
+                        </div>
+
+                        <button
+                            type="submit"
+                            disabled={loading}
+                            className={`w-full py-5 text-base tracking-[0.1em] font-black uppercase shadow-2xl transition-all active:scale-95 ${currentRoleData.styles.button} text-white rounded-2xl flex items-center justify-center gap-3`}
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                            </svg>
+                            {loading ? 'AUTHENTICATING...' : 'SECURE LOGIN'}
+                        </button>
+                    </form>
+
+                    <div className="mt-12 text-center">
+                        <p className="text-sm font-black text-black uppercase tracking-widest">
+                            New here?{' '}
+                            <Link to="/register" className={`${currentRoleData.styles.link} underline underline-offset-8 transition-colors`}>
+                                Create Account
+                            </Link>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>

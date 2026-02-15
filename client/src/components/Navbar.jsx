@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Navbar = () => {
@@ -11,45 +11,48 @@ const Navbar = () => {
     };
 
     return (
-        <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-gray-100">
+        <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-primary-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between h-20">
                     <div className="flex items-center">
                         <Link to="/" className="flex items-center group">
-                            <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-xl mr-3 group-hover:rotate-12 transition-transform duration-300">CB</div>
-                            <span className="text-2xl font-black bg-gradient-to-r from-primary-600 to-indigo-600 bg-clip-text text-transparent tracking-tight">Career Bridge</span>
+                            <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center text-white font-black text-xl mr-3 group-hover:rotate-6 transition-all duration-300 shadow-lg shadow-primary-200/50">CB</div>
+                            <span className="text-2xl font-black text-primary-600 tracking-tighter">Career Bridge</span>
                         </Link>
 
                         {user && (
                             <div className="hidden md:ml-10 md:flex md:items-center md:space-x-1">
                                 {user.role === 'student' && (
                                     <>
-                                        <Link to="/student/dashboard" className="nav-link">Dashboard</Link>
-                                        <Link to="/student/jobs" className="nav-link">Jobs</Link>
-                                        <Link to="/student/applications" className="nav-link">Applied</Link>
-                                        <Link to="/student/interviews" className="nav-link">Interviews</Link>
+                                        <NavLink to="/student/dashboard" className="nav-link">Dashboard</NavLink>
+                                        <NavLink to="/student/jobs" className="nav-link">Jobs</NavLink>
+                                        <NavLink to="/student/applications" className="nav-link">Applied</NavLink>
+                                        <NavLink to="/student/interviews" className="nav-link">Interviews</NavLink>
+                                        <NavLink to="/student/prep-notes" className="nav-link">Prep Notes</NavLink>
 
-                                        {/* Dropdown or More Menu could go here, for now keeping essential ones */}
-                                        <div className="h-4 w-px bg-gray-200 mx-2"></div>
+                                        <div className="h-4 w-px bg-primary-50 mx-2"></div>
 
-                                        <Link to="/student/mock-interview" className="nav-link text-indigo-600 font-semibold">AI Interview</Link>
-                                        <Link to="/student/courses" className="nav-link">Courses</Link>
+                                        <NavLink to="/student/mock-interview" className="nav-link">Mock Interview</NavLink>
+                                        <NavLink to="/student/ats-scanner" className="nav-link">Resume & ATS</NavLink>
+                                        <NavLink to="/student/courses" className="nav-link">Courses</NavLink>
                                     </>
                                 )}
 
                                 {user.role === 'recruiter' && (
                                     <>
-                                        <Link to="/recruiter/dashboard" className="nav-link">Dashboard</Link>
-                                        <Link to="/recruiter/post-job" className="nav-link">Post Job</Link>
-                                        <Link to="/recruiter/interviews" className="nav-link">Interviews</Link>
+                                        <NavLink to="/recruiter/dashboard" className="nav-link">Dashboard</NavLink>
+                                        <NavLink to="/recruiter/post-job" className="nav-link">Post Job</NavLink>
+                                        <NavLink to="/recruiter/applications" className="nav-link">Applications</NavLink>
+                                        <NavLink to="/recruiter/interviews" className="nav-link">Interviews</NavLink>
                                     </>
                                 )}
 
                                 {user.role === 'admin' && (
                                     <>
-                                        <Link to="/admin/dashboard" className="nav-link">Dashboard</Link>
-                                        <Link to="/admin/users" className="nav-link">Users</Link>
-                                        <Link to="/admin/prep-notes" className="nav-link">Prep Notes</Link>
+                                        <NavLink to="/admin/dashboard" className="nav-link">Analytics</NavLink>
+                                        <NavLink to="/admin/placements" className="nav-link">Placements</NavLink>
+                                        <NavLink to="/admin/users" className="nav-link">Users</NavLink>
+                                        <NavLink to="/admin/prep-notes" className="nav-link">Prep Notes</NavLink>
                                     </>
                                 )}
                             </div>
@@ -61,16 +64,16 @@ const Navbar = () => {
                             <div className="flex items-center space-x-6">
                                 <Link to="/profile" className="flex items-center space-x-3 group">
                                     <div className="text-right hidden sm:block">
-                                        <p className="text-sm font-bold text-gray-900 leading-tight group-hover:text-primary-600 transition-colors">{user.name}</p>
-                                        <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+                                        <p className="text-sm font-bold text-slate-900 leading-tight group-hover:text-primary-600 transition-colors">{user.name}</p>
+                                        <p className="text-xs text-slate-400 font-medium capitalize">{user.role}</p>
                                     </div>
-                                    <div className="w-10 h-10 bg-gradient-to-tr from-primary-500 to-indigo-500 rounded-full flex items-center justify-center text-white font-bold ring-2 ring-white shadow-md group-hover:scale-110 transition-transform">
+                                    <div className="w-10 h-10 bg-primary-600 rounded-full flex items-center justify-center text-white font-bold ring-2 ring-white shadow-md group-hover:scale-110 transition-transform">
                                         {user.name.charAt(0).toUpperCase()}
                                     </div>
                                 </Link>
                                 <button
                                     onClick={handleLogout}
-                                    className="p-2 text-gray-400 hover:text-rose-500 transition-colors"
+                                    className="p-2 text-slate-300 hover:text-rose-500 transition-colors"
                                     title="Logout"
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -80,10 +83,10 @@ const Navbar = () => {
                             </div>
                         ) : (
                             <div className="flex items-center space-x-3">
-                                <Link to="/login" className="px-5 py-2 text-sm font-bold text-gray-700 hover:text-primary-600 transition-colors">
+                                <Link to="/login" className="px-5 py-2 text-sm font-bold text-slate-600 hover:text-primary-600 transition-colors">
                                     Sign In
                                 </Link>
-                                <Link to="/register" className="btn-primary py-2 shadow-none">
+                                <Link to="/register" className="btn-primary py-2 px-6 shadow-none">
                                     Join Now
                                 </Link>
                             </div>

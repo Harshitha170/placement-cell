@@ -11,8 +11,10 @@ const AdminPrepNotes = () => {
         difficulty: 'medium',
         content: '',
         tips: '',
-        tags: ''
+        tags: '',
+        file: null
     });
+    const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
         fetchPrepNotes();
@@ -29,13 +31,25 @@ const AdminPrepNotes = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setSubmitting(true);
         try {
-            const data = {
-                ...formData,
-                tips: formData.tips.split('\n').filter(t => t.trim()),
-                tags: formData.tags.split(',').map(t => t.trim())
-            };
-            await api.post('/prep-notes', data);
+            const formDataToSubmit = new FormData();
+            formDataToSubmit.append('company', formData.company);
+            formDataToSubmit.append('topic', formData.topic);
+            formDataToSubmit.append('category', formData.category);
+            formDataToSubmit.append('difficulty', formData.difficulty);
+            formDataToSubmit.append('content', formData.content);
+            formDataToSubmit.append('tips', JSON.stringify(formData.tips.split('\n').filter(t => t.trim())));
+            formDataToSubmit.append('tags', JSON.stringify(formData.tags.split(',').map(t => t.trim())));
+
+            if (formData.file) {
+                formDataToSubmit.append('file', formData.file);
+            }
+
+            await api.post('/prep-notes', formDataToSubmit, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
             alert('Prep note created successfully!');
             setShowForm(false);
             setFormData({
@@ -45,11 +59,62 @@ const AdminPrepNotes = () => {
                 difficulty: 'medium',
                 content: '',
                 tips: '',
-                tags: ''
+                tags: '',
+                file: null
             });
             fetchPrepNotes();
         } catch (error) {
+            console.error('Submission error:', error);
             alert('Failed to create prep note');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleAIGenerate = async () => {
+        if (!formData.company || !formData.topic) {
+            alert('Please fill in Company and Topic first');
+            return;
+        }
+
+        try {
+            // Simulate AI delay
+            const button = document.activeElement;
+            const originalText = button.innerHTML;
+            button.innerHTML = 'Generating...';
+            button.disabled = true;
+
+            await new Promise(resolve => setTimeout(resolve, 1500));
+
+            const aiContent = {
+                content: `Here is a comprehensive guide for ${formData.topic} at ${formData.company}.\n\n` +
+                    `1. **Focus Areas**:\n` +
+                    `   - Deep dive into ${formData.topic} fundamentals.\n` +
+                    `   - Review recent interview experiences from GeeksforGeeks and LeetCode.\n\n` +
+                    `2. **Common Questions**:\n` +
+                    `   - Explain the core concepts of ${formData.topic}.\n` +
+                    `   - How does ${formData.company} utilize this technology?\n\n` +
+                    `3. **Key Concepts**:\n` +
+                    `   - Scalability and Performance\n` +
+                    `   - System Design implications\n`,
+                tips: `Practice coding problems related to ${formData.topic}\n` +
+                    `Read engineering blogs of ${formData.company}\n` +
+                    `Be prepared for behavioral questions based on Amazon Leadership Principles (if applicable)\n`,
+                tags: `${formData.topic}, ${formData.company}, Interview Prep, Guide`
+            };
+
+            setFormData(prev => ({
+                ...prev,
+                content: aiContent.content,
+                tips: aiContent.tips,
+                tags: aiContent.tags
+            }));
+
+            button.innerHTML = originalText;
+            button.disabled = false;
+        } catch (error) {
+            console.error(error);
+            alert('AI Generation failed');
         }
     };
 
@@ -152,7 +217,34 @@ const AdminPrepNotes = () => {
                             className="input-field"
                         />
                     </div>
-                    <button type="submit" className="btn-primary">Create Prep Note</button>
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Attachment (Optional: PDF, DOC, PPT)</label>
+                        <input
+                            type="file"
+                            onChange={(e) => setFormData({ ...formData, file: e.target.files[0] })}
+                            className="input-field border-dashed"
+                            accept=".pdf,.doc,.docx,.ppt,.pptx,.txt"
+                        />
+                        {formData.file && (
+                            <p className="text-[10px] font-black text-emerald-500 uppercase mt-2">Selected: {formData.file.name}</p>
+                        )}
+                    </div>
+                    <div className="flex gap-4">
+                        <button
+                            type="submit"
+                            disabled={submitting}
+                            className="btn-primary flex-1 disabled:opacity-50"
+                        >
+                            {submitting ? 'Creating...' : 'Create Prep Note'}
+                        </button>
+                        <button
+                            type="button"
+                            onClick={handleAIGenerate}
+                            className="btn-secondary flex-1 flex items-center justify-center gap-2"
+                        >
+                            <span>✨</span> Generate with AI
+                        </button>
+                    </div>
                 </form>
             )}
 
@@ -166,6 +258,9 @@ const AdminPrepNotes = () => {
                                 <div className="flex gap-2 mt-2">
                                     <span className="badge badge-info">{note.category}</span>
                                     <span className="badge badge-warning">{note.difficulty}</span>
+                                    {note.fileUrl && (
+                                        <span className="badge bg-emerald-50 text-emerald-600 border border-emerald-100 italic">📄 Document Attached</span>
+                                    )}
                                 </div>
                             </div>
                             <button onClick={() => handleDelete(note._id)} className="btn-danger text-sm">

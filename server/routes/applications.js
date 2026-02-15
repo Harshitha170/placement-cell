@@ -72,7 +72,7 @@ router.get('/my-applications', protect, authorize('student'), async (req, res) =
 router.get('/:id', protect, authorize('recruiter', 'admin'), async (req, res) => {
     try {
         const application = await Application.findById(req.params.id)
-            .populate('jobId', 'title company location')
+            .populate('jobId', 'title company location recruiterId')
             .populate('studentId', 'name email studentProfile');
 
         if (!application) {
@@ -95,6 +95,7 @@ router.get('/:id', protect, authorize('recruiter', 'admin'), async (req, res) =>
 // @access  Private (Recruiter - own jobs only)
 router.get('/job/:jobId', protect, authorize('recruiter', 'admin'), async (req, res) => {
     try {
+        const mongoose = require('mongoose');
         const job = await Job.findById(req.params.jobId);
 
         if (!job) {
@@ -106,12 +107,35 @@ router.get('/job/:jobId', protect, authorize('recruiter', 'admin'), async (req, 
             return res.status(403).json({ message: 'Not authorized' });
         }
 
-        const applications = await Application.find({ jobId: req.params.jobId })
+        const applications = await Application.find({
+            jobId: new mongoose.Types.ObjectId(req.params.jobId)
+        })
             .populate('studentId', 'name email studentProfile')
             .sort({ appliedAt: -1 });
 
         res.json(applications);
     } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   GET /api/applications/recruiter/all
+// @desc    Get all applications received for all jobs by recruiter
+// @access  Private (Recruiter only)
+router.get('/recruiter/all', protect, authorize('recruiter'), async (req, res) => {
+    try {
+        // Find jobs owned by recruiter
+        const jobs = await Job.find({ recruiterId: req.user._id });
+        const jobIds = jobs.map(job => job._id);
+
+        const applications = await Application.find({ jobId: { $in: jobIds } })
+            .populate('studentId', 'name email studentProfile')
+            .populate('jobId', 'title company')
+            .sort({ appliedAt: -1 });
+
+        res.json(applications);
+    } catch (error) {
+        console.error('Error fetching all recruiter applications:', error);
         res.status(500).json({ message: error.message });
     }
 });
@@ -168,6 +192,22 @@ router.get('/stats', protect, authorize('admin'), async (req, res) => {
             total: totalApplications,
             byStatus: statusCounts
         });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   GET /api/applications/admin/placements
+// @desc    Get all hired applications (Placements)
+// @access  Private (Admin only)
+router.get('/admin/placements', protect, authorize('admin'), async (req, res) => {
+    try {
+        const placements = await Application.find({ status: 'hired' })
+            .populate('studentId', 'name email studentProfile')
+            .populate('jobId', 'title company')
+            .sort({ updatedAt: -1 });
+
+        res.json(placements);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

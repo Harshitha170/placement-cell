@@ -1,28 +1,22 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import api from '../../api/axios';
 
-const JobApplicants = () => {
-    const { jobId } = useParams();
+const RecruiterApplications = () => {
     const [applications, setApplications] = useState([]);
-    const [jobDetails, setJobDetails] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedApp, setSelectedApp] = useState(null);
 
     useEffect(() => {
-        fetchApplications();
-    }, [jobId]);
+        fetchAllApplications();
+    }, []);
 
-    const fetchApplications = async () => {
+    const fetchAllApplications = async () => {
         try {
             setError(null);
-            const [appsResponse, jobResponse] = await Promise.all([
-                api.get(`/applications/job/${jobId}`),
-                api.get(`/jobs/${jobId}`)
-            ]);
-            setApplications(appsResponse.data);
-            setJobDetails(jobResponse.data);
+            const response = await api.get('/applications/recruiter/all');
+            setApplications(response.data);
         } catch (error) {
             console.error('Error:', error);
             setError(error.response?.data?.message || 'Failed to retrieve applications');
@@ -42,7 +36,7 @@ const JobApplicants = () => {
         try {
             await api.put(`/applications/${applicationId}/status`, { status: newStatus });
             alert('Status updated successfully!');
-            fetchApplications();
+            fetchAllApplications();
         } catch (error) {
             alert(error.response?.data?.message || 'Failed to update status');
         }
@@ -62,7 +56,7 @@ const JobApplicants = () => {
     if (loading) return (
         <div className="flex flex-col items-center justify-center min-h-[60vh]">
             <div className="w-12 h-12 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Loading Applicants</p>
+            <p className="text-slate-400 font-black uppercase tracking-widest text-[10px]">Loading Applications</p>
         </div>
     );
 
@@ -71,7 +65,7 @@ const JobApplicants = () => {
             <div className="text-6xl mb-6">⚠️</div>
             <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-4">{error}</h2>
             <button
-                onClick={fetchApplications}
+                onClick={fetchAllApplications}
                 className="px-8 py-4 bg-primary-400 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-primary-500 transition-all shadow-xl"
             >
                 Try Again
@@ -84,12 +78,12 @@ const JobApplicants = () => {
             {/* Header Section */}
             <div className="mb-12">
                 <Link to="/recruiter/dashboard" className="inline-flex items-center text-primary-600 font-black text-[10px] uppercase tracking-widest hover:text-primary-700 transition-all mb-6 group">
-                    <span className="mr-2 group-hover:-translate-x-1 transition-transform">←</span> Return to Hub
+                    <span className="mr-2 group-hover:-translate-x-1 transition-transform">←</span> Hub Overview
                 </Link>
                 <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                     <div>
-                        <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-2 uppercase italic">Applicants</h1>
-                        <p className="text-slate-500 font-medium italic">Viewing candidates for <span className="text-primary-500 font-bold not-italic">{jobDetails?.title}</span></p>
+                        <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-2 uppercase italic underline decoration-primary-400 decoration-8 underline-offset-8">All Applications</h1>
+                        <p className="text-slate-500 font-medium italic">View all students who have applied to your jobs.</p>
                     </div>
                     <div className="flex items-center gap-6 px-6 py-4 bg-slate-900 rounded-[2rem] text-white shadow-2xl">
                         <div className="text-center">
@@ -107,9 +101,9 @@ const JobApplicants = () => {
 
             {applications.length === 0 ? (
                 <div className="bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-200 py-32 text-center">
-                    <div className="text-8xl mb-6 grayscale">👥</div>
-                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-2">Pool is Empty</h3>
-                    <p className="text-slate-500 font-medium max-w-sm mx-auto">No candidates have applied for this position yet. Try boosting your job post or refining the criteria.</p>
+                    <div className="text-8xl mb-6 grayscale">📭</div>
+                    <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight mb-2">No Applications Yet</h3>
+                    <p className="text-slate-500 font-medium max-w-sm mx-auto">Once candidates apply to your job postings, they will appear here for evaluation.</p>
                 </div>
             ) : (
                 <div className="grid gap-6">
@@ -117,49 +111,46 @@ const JobApplicants = () => {
                         const style = getStatusStyles(app.status);
                         return (
                             <div key={app._id} className="group relative bg-white p-8 rounded-[2.5rem] border-2 border-slate-50 shadow-sm hover:shadow-3xl hover:border-primary-100 transition-all duration-500 overflow-hidden">
-                                {/* Status Flag */}
                                 <div className={`absolute top-0 right-0 px-8 py-3 rounded-bl-3xl border-l-2 border-b-2 font-black uppercase text-[10px] tracking-widest ${style.bg} ${style.text} ${style.border}`}>
                                     {style.label}
                                 </div>
 
                                 <div className="flex flex-col lg:flex-row gap-8 lg:items-center">
-                                    {/* Avatar/Initial */}
                                     <div className="w-20 h-20 bg-slate-900 text-white rounded-[1.5rem] flex items-center justify-center text-4xl font-black shadow-lg group-hover:scale-105 transition-transform duration-500">
                                         {app.studentId?.name?.[0] || 'A'}
                                     </div>
 
-                                    {/* Info Block */}
                                     <div className="flex-1">
-                                        <h3 className="text-2xl font-black text-slate-900 mb-1 uppercase tracking-tight group-hover:text-primary-600 transition-colors">
-                                            {app.studentId?.name}
-                                        </h3>
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <h3 className="text-2xl font-black text-slate-900 uppercase tracking-tight group-hover:text-primary-600 transition-colors">
+                                                {app.studentId?.name}
+                                            </h3>
+                                            <span className="text-[10px] font-black text-slate-300 uppercase tracking-widest mx-2">•</span>
+                                            <span className="text-xs font-black text-primary-500 uppercase tracking-widest bg-primary-50 px-3 py-1 rounded-full">{app.jobId?.title}</span>
+                                        </div>
                                         <p className="text-slate-500 font-bold text-sm mb-4 flex items-center gap-2">
                                             <span>📧 {app.studentId?.email}</span>
                                             <span className="w-1 h-1 bg-slate-200 rounded-full mx-1"></span>
-                                            <span>📅 Applied {new Date(app.appliedAt).toLocaleDateString()}</span>
+                                            <span>📅 {new Date(app.appliedAt).toLocaleDateString()}</span>
                                         </p>
 
                                         {app.studentId?.studentProfile && (
                                             <div className="flex flex-wrap gap-2">
                                                 {app.studentId.studentProfile.skills?.slice(0, 4).map((skill, idx) => (
-                                                    <span key={idx} className="px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-100 group-hover:bg-primary-50 group-hover:text-primary-600 group-hover:border-primary-100 transition-colors">
+                                                    <span key={idx} className="px-3 py-1 bg-slate-50 text-slate-400 rounded-full text-[10px] font-black uppercase tracking-widest border border-slate-100">
                                                         {skill}
                                                     </span>
                                                 ))}
-                                                {app.studentId.studentProfile.skills?.length > 4 && (
-                                                    <span className="px-3 py-1 bg-slate-50 text-slate-300 rounded-full text-[10px] font-black uppercase tracking-widest">+ {app.studentId.studentProfile.skills.length - 4} More</span>
-                                                )}
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* Actions Block */}
                                     <div className="flex flex-wrap lg:flex-col gap-3 min-w-[200px]">
                                         <button
                                             onClick={() => setSelectedApp(app)}
                                             className="flex-1 px-6 py-3 bg-white border-2 border-slate-100 rounded-2xl font-black uppercase text-[10px] tracking-widest text-slate-600 hover:bg-slate-50 transition-all flex items-center justify-center gap-2"
                                         >
-                                            🔍 Profile
+                                            🔍 View Profile
                                         </button>
                                         {app.resumeUrl && (
                                             <a
@@ -171,12 +162,6 @@ const JobApplicants = () => {
                                                 📄 Resume
                                             </a>
                                         )}
-                                        <Link
-                                            to={`/recruiter/schedule-interview/${app._id}`}
-                                            className="flex-1 px-6 py-3 bg-indigo-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-indigo-600 transition-all shadow-lg shadow-indigo-100 flex items-center justify-center gap-2"
-                                        >
-                                            📅 Schedule
-                                        </Link>
                                         <div className="relative group/sel flex-1">
                                             <select
                                                 value={app.status}
@@ -199,91 +184,64 @@ const JobApplicants = () => {
                 </div>
             )}
 
-            {/* Application Detail Modal - Re-engineered for excellence */}
+            {/* Application Detail Modal */}
             {selectedApp && (
                 <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-[100] p-4 animate-in fade-in duration-300">
                     <div className="bg-white rounded-[3rem] shadow-2xl w-full max-w-3xl max-h-[90vh] overflow-hidden animate-in slide-in-from-bottom-12 duration-500">
-                        {/* Modal Header */}
                         <div className="bg-slate-900 p-10 text-white relative">
                             <button onClick={() => setSelectedApp(null)} className="absolute top-10 right-10 w-12 h-12 flex items-center justify-center rounded-2xl bg-white/10 hover:bg-white/20 transition-all text-2xl font-light">×</button>
                             <h2 className="text-4xl font-black uppercase tracking-tight mb-2">Student Profile</h2>
-                            <p className="text-slate-400 font-medium italic">Reviewing <span className="text-primary-400 font-bold">{selectedApp.studentId?.name}</span> for {jobDetails?.title}</p>
+                            <p className="text-slate-400 font-medium italic">Reviewing <span className="text-primary-400 font-bold">{selectedApp.studentId?.name}</span> for {selectedApp.jobId?.title}</p>
                         </div>
 
-                        {/* Modal Body */}
                         <div className="p-10 overflow-y-auto max-h-[calc(90vh-200px)] space-y-10">
-                            {/* Candidate Summary */}
                             <div className="grid grid-cols-2 md:grid-cols-3 gap-8 pb-10 border-b border-slate-100">
                                 <div>
-                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Status</p>
-                                    <p className="font-black text-slate-900 uppercase text-sm">{selectedApp.status.replace('_', ' ')}</p>
-                                </div>
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Graduation</p>
-                                    <p className="font-black text-slate-900 uppercase text-sm">{selectedApp.studentId?.studentProfile?.graduationYear || '2025'}</p>
+                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Role Objective</p>
+                                    <p className="font-black text-slate-900 uppercase text-sm">{selectedApp.jobId?.title}</p>
                                 </div>
                                 <div>
                                     <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Academic CGPA</p>
                                     <p className="font-black text-primary-500 text-xl">{selectedApp.studentId?.studentProfile?.cgpa || '8.5'}</p>
                                 </div>
-                                <div className="col-span-2">
-                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Institution</p>
-                                    <p className="font-black text-slate-900 uppercase text-sm italic">{selectedApp.studentId?.studentProfile?.college || 'Technology Institute'}</p>
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] mb-1">Graduation</p>
+                                    <p className="font-black text-slate-900 uppercase text-sm">{selectedApp.studentId?.studentProfile?.graduationYear || '2025'}</p>
                                 </div>
                             </div>
 
-                            {/* Skills Section */}
-                            {selectedApp.studentId?.studentProfile?.skills && (
-                                <div className="space-y-4">
-                                    <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                                        <span className="w-1.5 h-4 bg-primary-400 rounded-full"></span> Hard Skills Proficiency
-                                    </h4>
-                                    <div className="flex flex-wrap gap-2">
-                                        {selectedApp.studentId.studentProfile.skills.map((skill, idx) => (
-                                            <span key={idx} className="px-4 py-2 bg-primary-50 text-primary-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-primary-100">
-                                                {skill}
-                                            </span>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Cover Note Section */}
                             {selectedApp.coverLetter && (
                                 <div className="space-y-4">
                                     <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest flex items-center gap-2">
-                                        <span className="w-1.5 h-4 bg-indigo-400 rounded-full"></span> Candidate Pitch
+                                        <span className="w-1.5 h-4 bg-indigo-400 rounded-full"></span> Pitch Statement
                                     </h4>
-                                    <div className="bg-slate-50 p-8 rounded-[2rem] border-2 border-slate-100 italic font-medium text-slate-600 leading-relaxed relative">
-                                        <span className="absolute top-4 left-4 text-4xl text-slate-200 select-none opacity-20">"</span>
+                                    <div className="bg-slate-50 p-8 rounded-[2rem] border-2 border-slate-100 italic font-medium text-slate-600 leading-relaxed">
                                         {selectedApp.coverLetter}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Resume Access Area */}
                             {selectedApp.resumeUrl && (
-                                <div className="bg-emerald-50 p-8 rounded-[2.5rem] border-2 border-emerald-100 flex items-center justify-between group/res">
+                                <div className="bg-emerald-50 p-8 rounded-[2.5rem] border-2 border-emerald-100 flex items-center justify-between">
                                     <div>
-                                        <h4 className="font-black text-emerald-900 uppercase text-xs tracking-widest mb-1">Professional Resume</h4>
-                                        <p className="text-emerald-600 text-[10px] font-bold">Standard PDF Document • Verified Origin</p>
+                                        <h4 className="font-black text-emerald-900 uppercase text-xs tracking-widest mb-1">Candidate Resume</h4>
+                                        <p className="text-emerald-600 text-[10px] font-bold">PDF Format • Secure Access</p>
                                     </div>
                                     <a
                                         href={getAssetUrl(selectedApp.resumeUrl)}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="px-6 py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-200 group-hover/res:-translate-y-1"
+                                        className="px-6 py-4 bg-emerald-500 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-lg"
                                     >
-                                        📄 View Resume
+                                        📄 Open Document
                                     </a>
                                 </div>
                             )}
 
-                            {/* Modal Footer Actions */}
                             <div className="flex gap-4 pt-10 border-t border-slate-100">
                                 <Link
                                     to={`/recruiter/schedule-interview/${selectedApp._id}`}
-                                    className="flex-[2] py-5 bg-indigo-500 text-white rounded-[2rem] font-black uppercase text-xs tracking-widest hover:bg-indigo-600 transition-all shadow-xl shadow-indigo-200 text-center"
+                                    className="flex-[2] py-5 bg-indigo-500 text-white rounded-[2rem] font-black uppercase text-xs tracking-widest text-center shadow-xl"
                                 >
                                     Initiate Interview
                                 </Link>
@@ -291,7 +249,7 @@ const JobApplicants = () => {
                                     onClick={() => setSelectedApp(null)}
                                     className="flex-1 py-5 bg-slate-50 text-slate-400 rounded-[2rem] font-black uppercase text-xs tracking-widest hover:bg-slate-100 transition-all"
                                 >
-                                    Shelve Dossier
+                                    Close
                                 </button>
                             </div>
                         </div>
@@ -302,4 +260,4 @@ const JobApplicants = () => {
     );
 };
 
-export default JobApplicants;
+export default RecruiterApplications;

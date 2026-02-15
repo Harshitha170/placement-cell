@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
@@ -18,15 +19,55 @@ import StudentProgress from './pages/student/Progress';
 import RecruiterDashboard from './pages/recruiter/Dashboard';
 import RecruiterPostJob from './pages/recruiter/PostJob';
 import RecruiterInterviews from './pages/recruiter/Interviews';
+import RecruiterApplications from './pages/recruiter/Applications';
 import RecruiterJobApplicants from './pages/recruiter/JobApplicants';
 import RecruiterScheduleInterview from './pages/recruiter/ScheduleInterview';
 import AdminDashboard from './pages/admin/Dashboard';
+import AdminPlacements from './pages/admin/Placements';
 import AdminUsers from './pages/admin/Users';
 import AdminPrepNotes from './pages/admin/PrepNotes';
 import Profile from './pages/Profile';
 
 const AppRoutes = () => {
   const { user } = useAuth();
+
+  // Dynamic Theme Engine
+  useEffect(() => {
+    const root = document.documentElement;
+
+    const themes = {
+      student: {
+        '--p-50': '#ecfdf5', '--p-100': '#d1fae5', '--p-200': '#a7f3d0',
+        '--p-300': '#6ee7b7', '--p-400': '#34d399', '--p-500': '#10b981',
+        '--p-600': '#059669', '--p-700': '#047857', '--p-800': '#065f46', '--p-900': '#064e3b',
+        '--shadow-sm': 'rgba(16, 185, 129, 0.05)',
+        '--shadow-md': 'rgba(5, 150, 105, 0.1)',
+        '--shadow-lg': 'rgba(16, 185, 129, 0.15)'
+      },
+      recruiter: {
+        '--p-50': '#eef2ff', '--p-100': '#e0e7ff', '--p-200': '#c7d2fe',
+        '--p-300': '#a5b4fc', '--p-400': '#818cf8', '--p-500': '#6366f1',
+        '--p-600': '#4f46e5', '--p-700': '#4338ca', '--p-800': '#3730a3', '--p-900': '#1e1b4b',
+        '--shadow-sm': 'rgba(99, 102, 241, 0.05)',
+        '--shadow-md': 'rgba(79, 70, 229, 0.1)',
+        '--shadow-lg': 'rgba(99, 102, 241, 0.15)'
+      },
+      admin: {
+        '--p-50': '#faf5ff', '--p-100': '#f3e8ff', '--p-200': '#e9d5ff',
+        '--p-300': '#d8b4fe', '--p-400': '#a855f7', '--p-500': '#9333ea',
+        '--p-600': '#7e22ce', '--p-700': '#6b21a8', '--p-800': '#581c87', '--p-900': '#3b0764',
+        '--shadow-sm': 'rgba(168, 85, 247, 0.05)',
+        '--shadow-md': 'rgba(126, 34, 206, 0.1)',
+        '--shadow-lg': 'rgba(168, 85, 247, 0.15)'
+      }
+    };
+
+    const currentTheme = themes[user?.role] || themes.student;
+
+    Object.entries(currentTheme).forEach(([property, value]) => {
+      root.style.setProperty(property, value);
+    });
+  }, [user]);
 
   return (
     <Routes>
@@ -134,10 +175,26 @@ const AppRoutes = () => {
         }
       />
       <Route
+        path="/recruiter/edit-job/:jobId"
+        element={
+          <PrivateRoute allowedRoles={['recruiter']}>
+            <RecruiterPostJob />
+          </PrivateRoute>
+        }
+      />
+      <Route
         path="/recruiter/interviews"
         element={
           <PrivateRoute allowedRoles={['recruiter']}>
             <RecruiterInterviews />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/recruiter/applications"
+        element={
+          <PrivateRoute allowedRoles={['recruiter']}>
+            <RecruiterApplications />
           </PrivateRoute>
         }
       />
@@ -164,6 +221,14 @@ const AppRoutes = () => {
         element={
           <PrivateRoute allowedRoles={['admin']}>
             <AdminDashboard />
+          </PrivateRoute>
+        }
+      />
+      <Route
+        path="/admin/placements"
+        element={
+          <PrivateRoute allowedRoles={['admin']}>
+            <AdminPlacements />
           </PrivateRoute>
         }
       />
@@ -197,6 +262,8 @@ const AppRoutes = () => {
   );
 };
 
+import StudentChatbot from './components/student/StudentChatbot';
+
 function App() {
   return (
     <Router>
@@ -204,6 +271,7 @@ function App() {
         <div className="min-h-screen bg-gray-50">
           <Navbar />
           <AppRoutes />
+          <StudentChatbot />
         </div>
       </AuthProvider>
     </Router>

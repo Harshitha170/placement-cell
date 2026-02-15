@@ -401,4 +401,41 @@ router.get('/stats/overview', protect, authorize('student'), async (req, res) =>
     }
 });
 
+// @route   DELETE /api/mock-interviews/:id
+// @desc    Delete a mock interview session
+// @access  Private (Student)
+router.delete('/:id', protect, authorize('student'), async (req, res) => {
+    try {
+        const mockInterview = await MockInterview.findById(req.params.id);
+
+        if (!mockInterview) {
+            return res.status(404).json({
+                success: false,
+                message: 'Mock interview not found'
+            });
+        }
+
+        // Verify ownership
+        if (mockInterview.student.toString() !== req.user.id) {
+            return res.status(403).json({
+                success: false,
+                message: 'Not authorized'
+            });
+        }
+
+        await mockInterview.deleteOne();
+
+        res.json({
+            success: true,
+            message: 'Mock interview session deleted successfully'
+        });
+    } catch (error) {
+        console.error('Error deleting mock interview:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error while deleting mock interview'
+        });
+    }
+});
+
 module.exports = router;

@@ -133,8 +133,28 @@ router.delete('/:id', protect, authorize('recruiter', 'admin'), async (req, res)
 // @access  Private (Recruiter only)
 router.get('/recruiter/my-jobs', protect, authorize('recruiter'), async (req, res) => {
     try {
-        const jobs = await Job.find({ recruiterId: req.user._id })
-            .sort({ createdAt: -1 });
+        const jobs = await Job.aggregate([
+            { $match: { recruiterId: req.user._id } },
+            {
+                $lookup: {
+                    from: 'applications',
+                    localField: '_id',
+                    foreignField: 'jobId',
+                    as: 'applicants'
+                }
+            },
+            {
+                $addFields: {
+                    applicantCount: { $size: '$applicants' }
+                }
+            },
+            {
+                $project: {
+                    applicants: 0 // Don't return the full applicants array here
+                }
+            },
+            { $sort: { createdAt: -1 } }
+        ]);
 
         res.json(jobs);
     } catch (error) {
