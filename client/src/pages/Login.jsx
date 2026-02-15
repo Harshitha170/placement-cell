@@ -250,14 +250,6 @@ const Login = () => {
                             </div>
                         </div>
 
-                        {/* Professional Identity Confirmation Box - Bold All Caps */}
-                        <div className="p-5 rounded-2xl border-2 border-black bg-slate-50 flex items-center justify-center transition-all duration-500 shadow-sm mb-6">
-                            <p className="text-sm font-black text-black uppercase tracking-[0.2em] flex items-center gap-3">
-                                <span className={`w-2 h-2 rounded-full ${currentRoleData.styles.dot} shadow-[0_0_10px_rgba(0,0,0,0.1)]`}></span>
-                                PROCEED AS <span className={`${currentRoleData.styles.text} underline underline-offset-4 decoration-2`}>{currentRoleData.title}</span>
-                            </p>
-                        </div>
-
                         <button
                             type="submit"
                             disabled={loading}
@@ -266,7 +258,7 @@ const Login = () => {
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
                             </svg>
-                            {loading ? 'AUTHENTICATING...' : 'SECURE LOGIN'}
+                            {loading ? 'AUTHENTICATING...' : `PROCEED AS ${currentRoleData.title.toUpperCase()}`}
                         </button>
                     </form>
 
