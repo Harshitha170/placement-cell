@@ -291,15 +291,12 @@ const Register = () => {
             <div className={`hidden lg:block relative w-[38%] ${currentRoleData.styles.logo} overflow-hidden transition-colors duration-700`}>
                 <img
                     className="absolute inset-0 h-full w-full object-cover opacity-90 shadow-2xl"
-                    src="/images/register_v2.png"
-                    alt="Register"
+                    src="/images/career_student_real.png"
+                    alt="Career Success"
                 />
                 <div className="absolute inset-0 bg-gradient-to-l from-black/60 to-transparent" />
                 <div className="absolute bottom-16 right-16 left-16 text-right">
                     <h2 className="text-5xl font-black text-white mb-6 leading-tight tracking-tight">Access Exclusive <span className="text-white/90">Opportunities</span>.</h2>
-                    <p className="text-xl text-white/80 max-w-sm ml-auto font-medium leading-relaxed">
-                        Join our community of over 10,000 successful students and leading industry recruiters.
-                    </p>
                 </div>
             </div>
         </div>

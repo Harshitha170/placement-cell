@@ -4,6 +4,11 @@ const Application = require('../models/Application');
 const Job = require('../models/Job');
 const { protect, authorize } = require('../middleware/authMiddleware');
 const upload = require('../middleware/upload');
+const {
+    sendApplicationConfirmation,
+    sendStatusUpdate
+} = require('../utils/emailService');
+
 
 // @route   POST /api/applications
 // @desc    Apply for a job with resume upload
@@ -44,6 +49,9 @@ router.post('/', protect, authorize('student'), upload.single('resume'), async (
         const populatedApplication = await Application.findById(application._id)
             .populate('jobId', 'title company')
             .populate('studentId', 'name email studentProfile');
+
+        // Send Application Confirmation Email
+        await sendApplicationConfirmation(populatedApplication.studentId, populatedApplication.jobId);
 
         res.status(201).json(populatedApplication);
     } catch (error) {
@@ -166,6 +174,15 @@ router.put('/:id/status', protect, authorize('recruiter', 'admin'), async (req, 
         const updatedApplication = await Application.findById(application._id)
             .populate('jobId', 'title company')
             .populate('studentId', 'name email studentProfile');
+
+        // Send Status Update Email
+        if (status !== 'applied') { // Only notify if status changed from initial 'applied'
+            await sendStatusUpdate(
+                updatedApplication.studentId,
+                updatedApplication.jobId,
+                status
+            );
+        }
 
         res.json(updatedApplication);
     } catch (error) {

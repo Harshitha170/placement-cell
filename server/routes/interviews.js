@@ -3,6 +3,13 @@ const router = express.Router();
 const Interview = require('../models/Interview');
 const Application = require('../models/Application');
 const { protect, authorize } = require('../middleware/authMiddleware');
+const {
+    sendInterviewConfirmation,
+    sendInterviewRescheduled,
+    sendInterviewCancelled,
+    sendInterviewFeedback
+} = require('../utils/emailService');
+
 
 // @route   POST /api/interviews
 // @desc    Schedule an interview
@@ -46,6 +53,14 @@ router.post('/', protect, authorize('recruiter', 'admin'), async (req, res) => {
             .populate('studentId', 'name email')
             .populate('jobId', 'title company')
             .populate('recruiterId', 'name email');
+
+        // Send Email Notification
+        await sendInterviewConfirmation(
+            populatedInterview.studentId,
+            populatedInterview,
+            populatedInterview.jobId,
+            populatedInterview.recruiterId
+        );
 
         res.status(201).json(populatedInterview);
     } catch (error) {
@@ -115,6 +130,13 @@ router.put('/:id', protect, authorize('recruiter', 'admin'), async (req, res) =>
             .populate('studentId', 'name email')
             .populate('jobId', 'title company');
 
+        // Send Reschedule Email
+        await sendInterviewRescheduled(
+            updatedInterview.studentId,
+            updatedInterview,
+            updatedInterview.jobId
+        );
+
         res.json(updatedInterview);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -140,7 +162,18 @@ router.put('/:id/cancel', protect, authorize('recruiter', 'admin'), async (req, 
         interview.status = 'cancelled';
         await interview.save();
 
-        res.json({ message: 'Interview cancelled successfully', interview });
+        const populatedInterview = await Interview.findById(interview._id)
+            .populate('studentId', 'name email')
+            .populate('jobId', 'title company');
+
+        // Send Cancellation Email
+        await sendInterviewCancelled(
+            populatedInterview.studentId,
+            populatedInterview,
+            populatedInterview.jobId
+        );
+
+        res.json({ message: 'Interview cancelled successfully', interview: populatedInterview });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -167,7 +200,18 @@ router.put('/:id/complete', protect, authorize('recruiter', 'admin'), async (req
         interview.feedback = feedback;
         await interview.save();
 
-        res.json(interview);
+        const populatedInterview = await Interview.findById(interview._id)
+            .populate('studentId', 'name email')
+            .populate('jobId', 'title company');
+
+        // Send Feedback Email
+        await sendInterviewFeedback(
+            populatedInterview.studentId,
+            populatedInterview,
+            populatedInterview.jobId
+        );
+
+        res.json(populatedInterview);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
