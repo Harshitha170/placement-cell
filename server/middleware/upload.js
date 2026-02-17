@@ -3,7 +3,11 @@ const path = require('path');
 
 // Set storage engine
 const storage = multer.diskStorage({
-    destination: './uploads/resumes',
+    destination: function (req, file, cb) {
+        // Netlify Functions have a read-only filesystem except for /tmp
+        const uploadPath = process.env.NETLIFY ? '/tmp/uploads' : './uploads/resumes';
+        cb(null, uploadPath);
+    },
     filename: function (req, file, cb) {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
     }
