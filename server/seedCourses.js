@@ -126,6 +126,20 @@ const sampleCourses = [
         isFree: true,
         enrollments: 1200000
     },
+    {
+        title: 'IBM Data Science Professional Certificate',
+        description: 'Kickstart your career in data science & ML. Build data science skills, learn Python & SQL, analyze & visualize data, build machine learning models.',
+        provider: 'Coursera',
+        url: 'https://www.coursera.org/professional-certificates/ibm-data-science',
+        category: 'Data Science',
+        jobRoles: ['Data Scientist', 'Data Analyst'],
+        skills: ['Data Science', 'Python', 'SQL', 'Data Analysis', 'Data Visualization'],
+        difficulty: 'Beginner',
+        duration: '5 months',
+        rating: 4.6,
+        isFree: true,
+        enrollments: 1000000
+    },
     // DevOps & Cloud
     {
         title: 'Docker and Kubernetes: The Complete Guide',
@@ -242,6 +256,20 @@ const sampleCourses = [
         isFree: true,
         enrollments: 450000
     },
+    {
+        title: 'Google Cybersecurity Professional Certificate',
+        description: 'Identify common risks, threats, and vulnerabilities, as well as the techniques to mitigate them.',
+        provider: 'Coursera',
+        url: 'https://www.coursera.org/professional-certificates/google-cybersecurity',
+        category: 'Cybersecurity',
+        jobRoles: ['Cybersecurity Analyst', 'Security Analyst'],
+        skills: ['Linux', 'SQL', 'Python', 'SIEM', 'IDS'],
+        difficulty: 'Beginner',
+        duration: '6 months',
+        rating: 4.8,
+        isFree: true,
+        enrollments: 400000
+    },
     // Soft Skills
     {
         title: 'Effective Communication Skills',
@@ -298,6 +326,35 @@ const sampleCourses = [
         rating: 4.7,
         isFree: false,
         enrollments: 670000
+    },
+    // More Coursera Specifics (Fetch Simulation)
+    {
+        title: 'Meta Front-End Developer Professional Certificate',
+        description: 'Launch your career as a front-end developer. Build job-ready skills for an in-demand career.',
+        provider: 'Coursera',
+        url: 'https://www.coursera.org/professional-certificates/meta-front-end-developer',
+        category: 'Web Development',
+        jobRoles: ['Frontend Developer', 'Web Developer'],
+        skills: ['React', 'JavaScript', 'HTML', 'CSS', 'UI/UX'],
+        difficulty: 'Beginner',
+        duration: '7 months',
+        rating: 4.7,
+        isFree: true,
+        enrollments: 350000
+    },
+    {
+        title: 'Meta Back-End Developer Professional Certificate',
+        description: 'Launch your career as a back-end developer. Build job-ready skills for an in-demand career.',
+        provider: 'Coursera',
+        url: 'https://www.coursera.org/professional-certificates/meta-back-end-developer',
+        category: 'Web Development',
+        jobRoles: ['Backend Developer', 'Software Engineer'],
+        skills: ['Python', 'Django', 'APIs', 'Databases', 'Cloud Computing'],
+        difficulty: 'Beginner',
+        duration: '8 months',
+        rating: 4.7,
+        isFree: true,
+        enrollments: 200000
     }
 ];
 

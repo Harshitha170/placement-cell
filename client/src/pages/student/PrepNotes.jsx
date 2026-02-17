@@ -8,9 +8,11 @@ const StudentPrepNotes = () => {
 
     const getAssetUrl = (url) => {
         if (!url) return '';
-        const cleanUrl = url.replace(/^\/+/, '');
-        // For development, use the server URL
-        return `http://localhost:5000/${cleanUrl}`;
+        if (url.startsWith('http')) return url;
+
+        // Get base URL (remove /api from the end if present)
+        const apiBase = (import.meta.env.VITE_API_URL || 'http://localhost:5000').replace(/\/api\/?$/, '');
+        return `${apiBase}${url.startsWith('/') ? '' : '/'}${url}`;
     };
 
     useEffect(() => {

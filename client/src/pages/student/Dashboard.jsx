@@ -202,6 +202,11 @@ const StudentDashboard = () => {
                                     <span className="font-bold flex-1 text-sm uppercase tracking-widest">AI Labs</span>
                                     <span className="opacity-0 group-hover/item:opacity-100 transition-all translate-x-[-10px] group-hover/item:translate-x-0">→</span>
                                 </Link>
+                                <Link to="/student/courses" className="flex items-center gap-4 p-5 bg-white/5 hover:bg-primary-400/20 rounded-3xl border border-white/5 transition-all group/item hover:translate-x-2">
+                                    <div className="w-10 h-10 bg-primary-400/20 rounded-xl flex items-center justify-center text-xl">📚</div>
+                                    <span className="font-bold flex-1 text-sm uppercase tracking-widest">Learning Vault</span>
+                                    <span className="opacity-0 group-hover/item:opacity-100 transition-all translate-x-[-10px] group-hover/item:translate-x-0">→</span>
+                                </Link>
                                 <Link to="/profile" className="flex items-center gap-4 p-5 bg-white/5 hover:bg-primary-400/20 rounded-3xl border border-white/5 transition-all group/item hover:translate-x-2">
                                     <div className="w-10 h-10 bg-primary-400/20 rounded-xl flex items-center justify-center text-xl">👤</div>
                                     <span className="font-bold flex-1 text-sm uppercase tracking-widest">Identity</span>
