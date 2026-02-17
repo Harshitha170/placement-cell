@@ -1,10 +1,8 @@
 const mongoose = require('mongoose');
 
-// Cache the connection
-let isConnected = false;
-
 const connectDB = async () => {
-  if (isConnected) {
+  // 1 = connected, 2 = connecting
+  if (mongoose.connection.readyState >= 1) {
     console.log('Using existing MongoDB connection');
     return;
   }
@@ -13,8 +11,9 @@ const connectDB = async () => {
     const uri = process.env.MONGODB_URI;
     if (!uri) throw new Error('MONGODB_URI is missing');
 
-    const db = await mongoose.connect(uri);
-    isConnected = db.connections[0].readyState;
+    await mongoose.connect(uri, {
+      serverSelectionTimeoutMS: 5000,
+    });
     console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error.message);

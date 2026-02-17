@@ -25,6 +25,12 @@ app.use(cors()); // Simplified CORS to ensure connectivity on Netlify
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Request logging to help troubleshoot Netlify
+app.use((req, res, next) => {
+    console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
+    next();
+});
+
 // Serve static files (uploaded resumes)
 app.use('/uploads', express.static('uploads'));
 
