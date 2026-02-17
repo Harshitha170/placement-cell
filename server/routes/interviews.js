@@ -176,12 +176,12 @@ router.put('/:id/cancel', protect, authorize('recruiter', 'admin'), async (req, 
             .populate('studentId', 'name email')
             .populate('jobId', 'title company');
 
-        // Send Cancellation Email
-        await sendInterviewCancelled(
+        // Send Cancellation Email (Non-blocking)
+        sendInterviewCancelled(
             populatedInterview.studentId,
             populatedInterview,
             populatedInterview.jobId
-        );
+        ).catch(console.error);
 
         res.json({ message: 'Interview cancelled successfully', interview: populatedInterview });
     } catch (error) {
@@ -214,12 +214,12 @@ router.put('/:id/complete', protect, authorize('recruiter', 'admin'), async (req
             .populate('studentId', 'name email')
             .populate('jobId', 'title company');
 
-        // Send Feedback Email
-        await sendInterviewFeedback(
+        // Send Feedback Email (Non-blocking)
+        sendInterviewFeedback(
             populatedInterview.studentId,
             populatedInterview,
             populatedInterview.jobId
-        );
+        ).catch(console.error);
 
         res.json(populatedInterview);
     } catch (error) {

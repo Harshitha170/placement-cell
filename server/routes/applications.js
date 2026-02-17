@@ -50,8 +50,8 @@ router.post('/', protect, authorize('student'), upload.single('resume'), async (
             .populate('jobId', 'title company')
             .populate('studentId', 'name email studentProfile');
 
-        // Send Application Confirmation Email
-        await sendApplicationConfirmation(populatedApplication.studentId, populatedApplication.jobId);
+        // Send Application Confirmation Email (Non-blocking)
+        sendApplicationConfirmation(populatedApplication.studentId, populatedApplication.jobId).catch(console.error);
 
         res.status(201).json(populatedApplication);
     } catch (error) {
@@ -175,13 +175,13 @@ router.put('/:id/status', protect, authorize('recruiter', 'admin'), async (req, 
             .populate('jobId', 'title company')
             .populate('studentId', 'name email studentProfile');
 
-        // Send Status Update Email
+        // Send Status Update Email (Non-blocking)
         if (status !== 'applied') { // Only notify if status changed from initial 'applied'
-            await sendStatusUpdate(
+            sendStatusUpdate(
                 updatedApplication.studentId,
                 updatedApplication.jobId,
                 status
-            );
+            ).catch(console.error);
         }
 
         res.json(updatedApplication);
