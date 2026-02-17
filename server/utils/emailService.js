@@ -6,9 +6,8 @@ console.log('PORT:', process.env.EMAIL_PORT);
 console.log('USER:', process.env.EMAIL_USER ? '(set)' : '(missing)');
 
 const transporter = nodemailer.createTransport({
-    host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-    port: process.env.EMAIL_PORT || 587,
-    secure: false, // true for 465, false for other ports
+    host: process.env.EMAIL_HOST,
+    port: process.env.EMAIL_PORT,
     auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
@@ -19,23 +18,28 @@ transporter.verify(function (error, success) {
     if (error) {
         console.error('❌ Email Service Connection Error:', error);
     } else {
-        console.log('✅ Email Service Connected');
+        console.log('✅ Email Service Connected: Ready to send');
     }
 });
 
 const sendEmail = async (options) => {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        console.error('❌ Email Error: Missing credentials. Cannot send email.');
+        return;
+    }
+
     const mailOptions = {
-        from: `Career Bridge <${process.env.EMAIL_USER}>`,
+        from: `"Career Bridge" <${process.env.EMAIL_USER}>`,
         to: options.email,
         subject: options.subject,
         html: options.html,
     };
 
     try {
-        await transporter.sendMail(mailOptions);
-        console.log(`Email sent to: ${options.email}`);
+        const info = await transporter.sendMail(mailOptions);
+        console.log(`✅ Email sent: ${info.messageId} to ${options.email}`);
     } catch (error) {
-        console.error('Email send error:', error);
+        console.error('❌ Email Send Error:', error);
     }
 };
 
