@@ -1,5 +1,10 @@
 const nodemailer = require('nodemailer');
 
+console.log('--- Email Service Config ---');
+console.log('HOST:', process.env.EMAIL_HOST);
+console.log('PORT:', process.env.EMAIL_PORT);
+console.log('USER:', process.env.EMAIL_USER ? '(set)' : '(missing)');
+
 const transporter = nodemailer.createTransport({
     host: process.env.EMAIL_HOST || 'smtp.gmail.com',
     port: process.env.EMAIL_PORT || 587,
@@ -8,6 +13,14 @@ const transporter = nodemailer.createTransport({
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
     },
+});
+
+transporter.verify(function (error, success) {
+    if (error) {
+        console.error('❌ Email Service Connection Error:', error);
+    } else {
+        console.log('✅ Email Service Connected');
+    }
 });
 
 const sendEmail = async (options) => {

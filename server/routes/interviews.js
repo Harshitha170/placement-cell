@@ -54,13 +54,13 @@ router.post('/', protect, authorize('recruiter', 'admin'), async (req, res) => {
             .populate('jobId', 'title company')
             .populate('recruiterId', 'name email');
 
-        // Send Email Notification
-        await sendInterviewConfirmation(
+        // Send Email Notification (Non-blocking)
+        sendInterviewConfirmation(
             populatedInterview.studentId,
             populatedInterview,
             populatedInterview.jobId,
             populatedInterview.recruiterId
-        );
+        ).catch(err => console.error('Failed to send interview email:', err));
 
         res.status(201).json(populatedInterview);
     } catch (error) {
@@ -131,11 +131,11 @@ router.put('/:id', protect, authorize('recruiter', 'admin'), async (req, res) =>
             .populate('jobId', 'title company');
 
         // Send Reschedule Email
-        await sendInterviewRescheduled(
+        sendInterviewRescheduled(
             updatedInterview.studentId,
             updatedInterview,
             updatedInterview.jobId
-        );
+        ).catch(console.error);
 
         res.json(updatedInterview);
     } catch (error) {
