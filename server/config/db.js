@@ -1,27 +1,23 @@
 const mongoose = require('mongoose');
 
+// Cache the connection
+let isConnected = false;
+
 const connectDB = async () => {
+  if (isConnected) {
+    console.log('Using existing MongoDB connection');
+    return;
+  }
+
   try {
     const uri = process.env.MONGODB_URI;
-    console.log('DEBUG: Checking MONGODB_URI...');
+    if (!uri) throw new Error('MONGODB_URI is missing');
 
-    if (!uri) {
-      console.error('FATAL: MONGODB_URI environment variable is NOT defined!');
-      process.exit(1);
-    }
-
-    console.log('DEBUG: MONGODB_URI is defined.');
-    console.log('DEBUG: Length:', uri.length);
-    // Log first 15 chars to check protocol (e.g. "mongodb+srv://")
-    console.log('DEBUG: Starts with:', uri.substring(0, 15) + '...');
-
-    await mongoose.connect(uri);
+    const db = await mongoose.connect(uri);
+    isConnected = db.connections[0].readyState;
     console.log('MongoDB connected successfully');
   } catch (error) {
     console.error('MongoDB connection error:', error.message);
-    if (process.env.NODE_ENV !== 'production') {
-      process.exit(1);
-    }
     throw error;
   }
 };
