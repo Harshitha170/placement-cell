@@ -241,16 +241,21 @@ const Courses = () => {
                                     <p className="text-slate-500 font-medium italic">
                                         {recommendedCourses.length > 0
                                             ? 'Courses precision-matched to your resume intelligence and applications.'
-                                            : 'Premium foundation courses to kickstart your professional journey.'}
+                                            : 'Explore our top foundation courses across all streams below.'}
                                     </p>
                                 </div>
 
-                                <FeaturedCard id="SD-feat-rec" />
-
                                 {recommendedCourses.length === 0 ? (
-                                    <div className="bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-200 py-20 text-center">
-                                        <h3 className="text-xl font-black text-slate-900 uppercase tracking-tight mb-2">No Matches Found</h3>
-                                        <p className="text-slate-500 font-medium max-w-sm mx-auto">Explore All Courses for our full catalog of elite resources.</p>
+                                    <div className="grid grid-cols-1 gap-8">
+                                        {courses.slice(0, 5).map(course => <CourseCard key={course._id} course={course} />)}
+                                        <div className="text-center py-10">
+                                            <button
+                                                onClick={() => setActiveTab('all')}
+                                                className="text-primary-600 font-black uppercase text-[10px] tracking-widest border-b-2 border-primary-200 pb-1 hover:border-primary-500 transition-all"
+                                            >
+                                                View Full Stream Catalog →
+                                            </button>
+                                        </div>
                                     </div>
                                 ) : (
                                     recommendedCourses.map(course => <CourseCard key={course._id} course={course} />)
@@ -345,7 +350,7 @@ const Courses = () => {
                                     <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">Inventory: {courses.length} Resources</span>
                                 </div>
 
-                                <FeaturedCard id="SD-feat-all" />
+
 
                                 {courses.length === 0 ? (
                                     <div className="bg-slate-50/50 rounded-[3rem] border-2 border-dashed border-slate-200 py-20 text-center">
