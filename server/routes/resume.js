@@ -11,7 +11,9 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 // Configure multer for file upload
 const storage = multer.diskStorage({
     destination: async (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../uploads/resumes');
+        const uploadDir = process.env.NETLIFY
+            ? '/tmp/resumes'
+            : path.join(__dirname, '../uploads/resumes');
         try {
             await fs.mkdir(uploadDir, { recursive: true });
             cb(null, uploadDir);
