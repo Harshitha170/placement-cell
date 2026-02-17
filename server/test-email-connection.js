@@ -1,4 +1,5 @@
 const nodemailer = require('nodemailer');
+require('dotenv').config();
 
 console.log('--- Email Connection Tester ---');
 console.log('Checking environment variables...');
