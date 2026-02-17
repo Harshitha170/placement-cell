@@ -24,8 +24,6 @@ services:
   - type: web
     name: career-bridge-frontend
     runtime: static
-    region: oregon
-    plan: free
     buildCommand: cd client && npm install && npm run build
     staticPublishPath: ./client/dist
     envVars:
