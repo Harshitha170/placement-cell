@@ -21,47 +21,33 @@ const app = express();
 connectDB();
 
 // Middleware
-const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    process.env.FRONTEND_URL
-].filter(Boolean);
-
-app.use(cors({
-    origin: function (origin, callback) {
-        // Allow requests with no origin (mobile apps, Postman, etc.)
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.indexOf(origin) !== -1 || process.env.NODE_ENV === 'development') {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true
-}));
+app.use(cors()); // Simplified CORS to ensure connectivity on Netlify
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Serve static files (uploaded resumes)
 app.use('/uploads', express.static('uploads'));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/jobs', jobRoutes);
-app.use('/api/applications', applicationRoutes);
-app.use('/api/interviews', interviewRoutes);
-app.use('/api/prep-notes', prepNoteRoutes);
-app.use('/api/resume', resumeRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/courses', courseRoutes);
-app.use('/api/mock-interviews', mockInterviewRoutes);
-app.use('/api/progress', progressRoutes);
+// Define the API Router
+const apiRouter = express.Router();
+apiRouter.use('/auth', authRoutes);
+apiRouter.use('/jobs', jobRoutes);
+apiRouter.use('/applications', applicationRoutes);
+apiRouter.use('/interviews', interviewRoutes);
+apiRouter.use('/prep-notes', prepNoteRoutes);
+apiRouter.use('/resume', resumeRoutes);
+apiRouter.use('/users', userRoutes);
+apiRouter.use('/courses', courseRoutes);
+apiRouter.use('/mock-interviews', mockInterviewRoutes);
+apiRouter.use('/progress', progressRoutes);
 
-// Health check
-app.get('/api/health', (req, res) => {
+apiRouter.get('/health', (req, res) => {
     res.json({ status: 'OK', message: 'Placement Cell API is running' });
 });
+
+// Dual mounting for Local and Netlify support
+app.use('/api', apiRouter);
+app.use('/', apiRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
