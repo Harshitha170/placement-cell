@@ -294,6 +294,11 @@ const Courses = () => {
                                                 <option value="Web Development">Web Development</option>
                                                 <option value="Interview Prep">Interview Prep</option>
                                                 <option value="Data Science">Data Science</option>
+                                                <option value="AI/ML">AI/ML</option>
+                                                <option value="DevOps">DevOps</option>
+                                                <option value="Mobile Development">Mobile Development</option>
+                                                <option value="Cybersecurity">Cybersecurity</option>
+                                                <option value="Soft Skills">Soft Skills</option>
                                             </select>
                                         </div>
 

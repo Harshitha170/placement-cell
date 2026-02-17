@@ -44,6 +44,7 @@ router.get('/', protect, async (req, res) => {
         const courses = await Course.find(query)
             .sort({ rating: -1, enrollments: -1 })
             .limit(50);
+        console.log(`DEBUG: Found ${courses.length} courses for query:`, query);
 
         res.json({
             success: true,
