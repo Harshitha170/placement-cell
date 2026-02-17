@@ -61,10 +61,13 @@ app.use((err, req, res, next) => {
 
 const PORT = process.env.PORT || 5000;
 
-if (process.env.NODE_ENV !== 'production' || !process.env.NETLIFY) {
+// ONLY start the server if we are NOT on Netlify
+if (!process.env.NETLIFY) {
     app.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+        console.log(`Server running locally on port ${PORT}`);
     });
+} else {
+    console.log('--- Running in Netlify Serverless Mode ---');
 }
 
 module.exports = app;
