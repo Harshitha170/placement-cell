@@ -11,15 +11,14 @@ const { protect, authorize } = require('../middleware/authMiddleware');
 // Configure multer for file upload
 const storage = multer.diskStorage({
     destination: async (req, file, cb) => {
-        const uploadDir = process.env.NETLIFY
-            ? '/tmp/resumes'
-            : path.join(__dirname, '../uploads/resumes');
+        const isNetlify = process.env.NETLIFY === 'true' || process.env.LAMBDA_TASK_ROOT;
+        const uploadDir = isNetlify ? '/tmp/resumes' : path.join(__dirname, '../uploads/resumes');
         try {
             await fs.mkdir(uploadDir, { recursive: true });
-            cb(null, uploadDir);
         } catch (error) {
-            cb(error);
+            // Directory might already exist or be read-only (which is okay for /tmp)
         }
+        cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);

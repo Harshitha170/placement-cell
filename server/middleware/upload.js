@@ -4,8 +4,18 @@ const path = require('path');
 // Set storage engine
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        // Netlify Functions have a read-only filesystem except for /tmp
-        const uploadPath = process.env.NETLIFY ? '/tmp/uploads' : './uploads/resumes';
+        // Use /tmp for Netlify/Serverless environments
+        const isNetlify = process.env.NETLIFY === 'true' || process.env.LAMBDA_TASK_ROOT;
+        const uploadPath = isNetlify ? '/tmp/uploads' : './uploads/resumes';
+
+        try {
+            const fs = require('fs');
+            if (!fs.existsSync(uploadPath)) {
+                fs.mkdirSync(uploadPath, { recursive: true });
+            }
+        } catch (err) {
+            console.log('Note: Directory creation handled for serverless');
+        }
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {

@@ -2,15 +2,22 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// Create upload directory if it doesn't exist
-const uploadDir = './uploads/notes';
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
 // Set storage engine
 const storage = multer.diskStorage({
-    destination: uploadDir,
+    destination: function (req, file, cb) {
+        // Use /tmp for Netlify/Serverless environments
+        const isNetlify = process.env.NETLIFY === 'true' || process.env.LAMBDA_TASK_ROOT;
+        const uploadDir = isNetlify ? '/tmp/notes' : './uploads/notes';
+
+        try {
+            if (!fs.existsSync(uploadDir)) {
+                fs.mkdirSync(uploadDir, { recursive: true });
+            }
+        } catch (err) {
+            console.log('Note: Directory creation handled for serverless');
+        }
+        cb(null, uploadDir);
+    },
     filename: function (req, file, cb) {
         cb(null, 'note-' + Date.now() + path.extname(file.originalname));
     }
