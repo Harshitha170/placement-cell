@@ -1,7 +1,10 @@
 const serverless = require('serverless-http');
 const app = require('../server');
 
-// Forced Update: 2026-02-18-00-15
-console.log('--- Netlify Function Initialized ---');
+// Initialize database before handling requests to avoid 502 timeouts
+const connectDB = require('../config/db');
+connectDB();
+
+console.log('--- Netlify API Initialized ---');
 
 module.exports.handler = serverless(app);
