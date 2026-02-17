@@ -15,39 +15,47 @@ const {
 // @desc    Schedule an interview
 // @access  Private (Recruiter only)
 router.post('/', protect, authorize('recruiter', 'admin'), async (req, res) => {
+    console.log('--- Interview Creation Start ---');
     try {
-        const { applicationId, scheduledDate, duration, meetingLink, meetingType, location, notes } = req.body;
+        const { applicationId, scheduledDate, duration, meetingType } = req.body;
+        console.log('Payload:', { applicationId, scheduledDate, duration, meetingType });
 
         // Get application details
-        const application = await Application.findById(applicationId)
-            .populate('jobId');
+        const application = await Application.findById(applicationId).populate('jobId');
 
         if (!application) {
+            console.log('❌ Application not found');
             return res.status(404).json({ message: 'Application not found' });
         }
 
         // Check ownership
         if (application.jobId.recruiterId.toString() !== req.user._id.toString() && req.user.role !== 'admin') {
+            console.log('❌ Ownership check failed');
             return res.status(403).json({ message: 'Not authorized' });
         }
 
         // Create interview
-        const interview = await Interview.create({
+        const interviewData = {
             applicationId,
             studentId: application.studentId,
             recruiterId: req.user._id,
             jobId: application.jobId._id,
-            scheduledDate,
+            scheduledDate: new Date(scheduledDate),
             duration,
-            meetingLink,
+            meetingLink: req.body.meetingLink,
             meetingType,
-            location,
-            notes
-        });
+            location: req.body.location,
+            notes: req.body.notes
+        };
+        console.log('Creating Interview with data:', JSON.stringify(interviewData, null, 2));
+
+        const interview = await Interview.create(interviewData);
+        console.log('✅ Interview Created:', interview._id);
 
         // Update application status
         application.status = 'interview_scheduled';
         await application.save();
+        console.log('✅ Application Status Updated');
 
         const populatedInterview = await Interview.findById(interview._id)
             .populate('studentId', 'name email')
@@ -60,10 +68,12 @@ router.post('/', protect, authorize('recruiter', 'admin'), async (req, res) => {
             populatedInterview,
             populatedInterview.jobId,
             populatedInterview.recruiterId
-        ).catch(err => console.error('Failed to send interview email:', err));
+        ).catch(err => console.error('❌ Background Email Error:', err));
 
+        console.log('--- Interview Creation Success ---');
         res.status(201).json(populatedInterview);
     } catch (error) {
+        console.error('❌ Interview Creation Failed:', error);
         res.status(500).json({ message: error.message });
     }
 });

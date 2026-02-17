@@ -53,11 +53,6 @@ const ScheduleInterview = () => {
                 ...formData
             });
 
-            await api.put(`/applications/${applicationId}/status`, {
-                status: 'interview_scheduled'
-            });
-
-            alert('Interview scheduled successfully!');
             navigate(`/recruiter/job/${application.jobId._id}/applicants`);
         } catch (error) {
             console.error('Error:', error);
